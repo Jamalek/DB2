@@ -194,7 +194,9 @@ public class NovyHrac extends JDialog{
 				DB.novyHrac(
 						tf_jmeno.getText(), 
 						tf_prijmeni.getText(), 
-						tf_dn_rok.getText()+"-"+tf_dn_mesic.getText()+"-"+tf_dn_den.getText(), 
+						tf_dn_rok.getText()+"-"+
+						(tf_dn_mesic.getText().length()==2?tf_dn_mesic.getText():"0"+tf_dn_mesic.getText())+"-"+
+						(tf_dn_den.getText().length()==2?tf_dn_den.getText():"0"+tf_dn_den.getText()), 
 						tf_vaha.getText(), 
 						post, 
 						ch_nazevTymu.getSelectedItem());

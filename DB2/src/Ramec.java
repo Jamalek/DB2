@@ -25,6 +25,7 @@ import javax.swing.UIManager;
  * @author Jan
  */
 public class Ramec extends javax.swing.JFrame {
+	static Ramec instance = null;
 	static ArrayList<Tym> tymy = new ArrayList<Tym>();
 	static ArrayList<Hrac> hraciT1 = new ArrayList<Hrac>();
 	static ArrayList<Hrac> hraciT2 = new ArrayList<Hrac>();
@@ -32,6 +33,7 @@ public class Ramec extends javax.swing.JFrame {
      * Creates new form Ramec
      */
     public Ramec() {
+    	instance = this;
         initComponents();
         setTitle("Fotbalová liga");
         setSize(new Dimension(300, 300));
@@ -847,8 +849,8 @@ public class Ramec extends javax.swing.JFrame {
 	private void zacit_zapas() {
 		int t1id = tymy.get(jList1.getSelectedIndex()).id;
 		int t2id = tymy.get(jList2.getSelectedIndex()).id;
-		boolean ok = DB.novyZapas(t1id, t2id);
-		if (t1id != 0 && t2id != 0 && t1id != t2id && ok) {
+		int ok = DB.novyZapas(t1id, t2id);
+		if (t1id != 0 && t2id != 0 && t1id != t2id && ok == 0) {
 			hraciT1 = DB.nactiHrace(t1id);
 			hraciT2 = DB.nactiHrace(t2id);
 			popiskyHracu();
@@ -858,8 +860,10 @@ public class Ramec extends javax.swing.JFrame {
 	        setSize(new Dimension(500, 400));
 	        setLocationRelativeTo(null);
 			repaint();
-		} else if (!ok) {
-			vyber_tym.setText("Tyto týmy spolu zde již hrály!");
+		} else if (ok == 1) {
+			vyber_tym.setText("Jeden z týmů má málo hráčů.");
+		} else if (ok == 2) {
+			vyber_tym.setText("Tyto týmy zde již hrály!");
 		} else vyber_tym.setText("Tým nemůže hrát sám :(");
 	}
     

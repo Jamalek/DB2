@@ -66,6 +66,9 @@ public class NovyTym extends JDialog{
                 } else {
                 	dispose();
                 	DB.novyTym(tf_nazevTymu.getText(), tf_hriste.getText());
+                	Ramec.tymy=DB.nactiTymy();
+                	Ramec.instance.dispose();
+                	Ramec.start();
                 }
             }
         });

@@ -1,5 +1,6 @@
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -56,7 +57,7 @@ public class DB {
 		return hraci;
 	}
 	
-	public static boolean novyZapas(int t1id, int t2id) {
+	public static int novyZapas(int t1id, int t2id) {
 		Statement stmt = null;
 		String query = "INSERT INTO zapas VALUES("
 				+ "seq_zapas.nextval, "
@@ -70,11 +71,11 @@ public class DB {
 			stmt = con.createStatement();
 			stmt.executeQuery(query);
 		} catch (SQLException e) {
-			return false;
+			return Integer.valueOf(e.getMessage().charAt(4))==50?2:1;
 		} finally {
 			closeStatement(stmt);
 		}
-		return true;
+		return 0;
 	}
 	
 	public static void gol(String typGolu, Hrac hrac, String cas) {
@@ -96,17 +97,19 @@ public class DB {
 
 	public static void novyHrac(String jmeno, String prijmeni, String dNarozeni, String vaha, String post, String tym) {
 		Statement stmt = null;
-		String query = "INSERT INTO hrac VALUES("
-				+ "seq_hrac.nextval, "
-				+ "'"+jmeno + "', "
-				+ "'"+prijmeni + "', "
-				+ "'"+dNarozeni + "', "
-				+ vaha + ", "
-				+ "0, "
-				+ "180)";
+		PreparedStatement preparedStatement = null;
+		String insertTableSQL = "INSERT INTO hrac VALUES"
+				+ "(seq_hrac.nextval,?,?,?,?,0,180)";
+
 		try {
-			stmt = con.createStatement();
-			stmt.executeQuery(query);
+			preparedStatement = con.prepareStatement(insertTableSQL);
+
+			preparedStatement.setString(1, jmeno);
+			preparedStatement.setString(2, prijmeni);
+			preparedStatement.setTimestamp(3, Timestamp.valueOf(dNarozeni+" 00:00:00"));
+			preparedStatement.setInt(4, Integer.parseInt(vaha));
+
+			preparedStatement.executeUpdate();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -117,18 +120,18 @@ public class DB {
 	
 	private static void zapisDoSoupisky(String post, String tym) {
 		Statement stmt = null;
-		String query = "INSERT INTO hrac VALUES("
+		String query = "INSERT INTO soupiska VALUES("
 				+ "(SELECT id FROM tym WHERE nazev='"+tym+"'), "
 				+ "seq_hrac.currval, "
 				+ "'"+post + "')";
 		try {
+			System.out.println(query);
 			stmt = con.createStatement();
 			stmt.executeQuery(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
 			closeStatement(stmt);
-			zapisDoSoupisky(post, tym);
 		}
 	}
 
@@ -144,7 +147,6 @@ public class DB {
 				+ "0, "
 				+ "NULL)";
 		try {
-			System.out.println(query);
 			stmt = con.createStatement();
 			stmt.executeQuery(query);
 		} catch (SQLException e) {
