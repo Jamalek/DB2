@@ -2,6 +2,7 @@ import java.sql.*;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
 public class DB {
@@ -92,7 +93,82 @@ public class DB {
 			closeStatement(stmt);
 		}
 	}
+
+	public static void novyHrac(String jmeno, String prijmeni, String dNarozeni, String vaha, String post, String tym) {
+		Statement stmt = null;
+		String query = "INSERT INTO hrac VALUES("
+				+ "seq_hrac.nextval, "
+				+ "'"+jmeno + "', "
+				+ "'"+prijmeni + "', "
+				+ "'"+dNarozeni + "', "
+				+ vaha + ", "
+				+ "0, "
+				+ "180)";
+		try {
+			stmt = con.createStatement();
+			stmt.executeQuery(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeStatement(stmt);
+			zapisDoSoupisky(post, tym);
+		}
+	}
 	
+	private static void zapisDoSoupisky(String post, String tym) {
+		Statement stmt = null;
+		String query = "INSERT INTO hrac VALUES("
+				+ "(SELECT id FROM tym WHERE nazev='"+tym+"'), "
+				+ "seq_hrac.currval, "
+				+ "'"+post + "')";
+		try {
+			stmt = con.createStatement();
+			stmt.executeQuery(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeStatement(stmt);
+			zapisDoSoupisky(post, tym);
+		}
+	}
+
+	public static void novyTym(String nazevTymu, String nazevHriste) {
+		noveHriste(nazevHriste);
+		Statement stmt = null;
+		String query = "INSERT INTO tym VALUES("
+				+ "seq_tym.nextval, "
+				+ "'"+nazevTymu + "', "
+				+ "(SELECT id FROM misto WHERE nazev='"+nazevHriste+"'), "
+				+ "0, "
+				+ "0, "
+				+ "0, "
+				+ "NULL)";
+		try {
+			System.out.println(query);
+			stmt = con.createStatement();
+			stmt.executeQuery(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeStatement(stmt);
+		}
+	}
+	
+	public static void noveHriste(String nazev) {
+		Statement stmt = null;
+		String query = "INSERT INTO misto VALUES("
+				+ "seq_hriste.nextval, "
+				+ "'"+nazev + "')";
+		try {
+			stmt = con.createStatement();
+			stmt.executeQuery(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeStatement(stmt);
+		}
+	}
+		
 	public static void updateSkore(JLabel label) {
 		Statement stmt = null;
 		String query = "SELECT skore1, skore2 FROM zapas WHERE id=(select max(id) from zapas)";
@@ -136,12 +212,19 @@ public class DB {
 			stmt = con.createStatement();
 			ResultSet rs = stmt.executeQuery(query);
 			while (rs.next()) {
+				String post = "";
+				switch (rs.getString("post").charAt(0)) {
+				case 'B': post="Brankář"; break;
+				case 'O': post="Obránce"; break;
+				case 'Z': post="Záložník"; break;
+				case 'U': post="Útočník"; break;
+				default: break; }
 				model.addRow(new Object[] {
 						rs.getString("jmeno"),
 						rs.getString("prijmeni"),
 						rs.getString("d_narozeni").substring(0, 10),
 						rs.getString("vaha"),
-						rs.getString("post"),
+						post ,
 						rs.getString("goly"),
 						rs.getString("ZAPASU_CELKEM"),
 						rs.getString("ZAPASU_DOMA"),
@@ -204,6 +287,23 @@ public class DB {
 		} finally {
 			closeStatement(stmt);
 		}
+	}
+
+	public static boolean tymExistuje(String text) {
+		Statement stmt = null;
+		String query = "SELECT * FROM tym WHERE nazev = '"+text+"'";
+		try {
+			stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery(query);
+			while (rs.next()) {
+				return true;
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			closeStatement(stmt);
+		}
+		return false;
 	}
 
 	public static void vycistiDB() {

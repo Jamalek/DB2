@@ -917,8 +917,8 @@ public class Ramec extends javax.swing.JFrame {
     }
     
     public static void start() {
-       	//DB.connect();
-    	//tymy = DB.nactiTymy();
+       	DB.connect();
+    	tymy = DB.nactiTymy();
         try {
         	UIManager.setLookAndFeel(
             UIManager.getSystemLookAndFeelClassName());
